@@ -1810,13 +1810,13 @@ String generateUpdatePageHTML() {
 
                 <div class="update-actions">
                     <button class="action-btn primary" onclick="checkForUpdates()" )" + (updateInProgress ? "disabled" : "") + R"(>
-                        🔍 Check for Updates
+                        Check for Updates
                     </button>
                     <a href="/config" class="action-btn">
-                        ⚙️ Update Settings
+                        Update Settings
                     </a>
                     <a href="/logs" class="action-btn">
-                        📋 View Update Logs
+                        View Update Logs
                     </a>
                 </div>
             </div>

@@ -40,7 +40,7 @@ jobs:
             --fqbn esp32:esp32:esp32 \
             --output-dir build \
             --export-binaries \
-            esp32_dht22_prometheus/
+            esp32_dht22_prometheus/esp32_dht22_prometheus.ino
 
       - name: Rename binary with version
         run: |
