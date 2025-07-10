@@ -1984,8 +1984,11 @@ bool downloadAndInstallUpdate(String version) {
   logMessage("INFO", "OTA", "Downloading firmware from: " + firmwareUrl);
 
   HTTPClient http;
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
   http.begin(firmwareUrl);
   http.addHeader("User-Agent", "ESP32-OTA-Updater");
+  http.addHeader("Accept", "*/*");
+  http.addHeader("Accept-Encoding", "identity");
 
   int httpCode = http.GET();
 
