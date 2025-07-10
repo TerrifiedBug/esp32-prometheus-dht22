@@ -535,7 +535,7 @@ String generateRootPageHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌡️ ESP32 Sensor Dashboard</h1>
+            <h1>ESP32 Sensor Dashboard</h1>
             <div class="device-info">
                 <span><strong>Device:</strong> )" + config.deviceName + R"(</span>
                 <span><strong>Location:</strong> )" + config.location + R"(</span>
@@ -547,7 +547,7 @@ String generateRootPageHTML() {
             <div class="metrics-grid">
                 <div class="metric-card temperature">
                     <div class="metric-header">
-                        <div class="metric-icon">🌡️</div>
+                        <div class="metric-icon">TEMP</div>
                         <div class="metric-title">Temperature</div>
                     </div>
                     <div class="metric-value">)" + tempStr + R"(°C</div>
@@ -559,7 +559,7 @@ String generateRootPageHTML() {
 
                 <div class="metric-card humidity">
                     <div class="metric-header">
-                        <div class="metric-icon">💧</div>
+                        <div class="metric-icon">HUM</div>
                         <div class="metric-title">Humidity</div>
                     </div>
                     <div class="metric-value">)" + humStr + R"(%</div>
@@ -571,7 +571,7 @@ String generateRootPageHTML() {
 
                 <div class="metric-card system">
                     <div class="metric-header">
-                        <div class="metric-icon">⚡</div>
+                        <div class="metric-icon">SYS</div>
                         <div class="metric-title">System Status</div>
                     </div>
                     <div class="metric-value">)" + String(ESP.getFreeHeap() / 1024) + R"(KB</div>
@@ -584,7 +584,7 @@ String generateRootPageHTML() {
 
                 <div class="metric-card network">
                     <div class="metric-header">
-                        <div class="metric-icon">📡</div>
+                        <div class="metric-icon">NET</div>
                         <div class="metric-title">Network</div>
                     </div>
                     <div class="metric-value">)" + WiFi.localIP().toString() + R"(</div>
@@ -597,20 +597,20 @@ String generateRootPageHTML() {
             </div>
 
             <div class="refresh-info">
-                <strong>🕒 Current Time:</strong> <span id="current-time"></span><br>
+                <strong>Current Time:</strong> <span id="current-time"></span><br>
                 <small>Dashboard auto-refreshes every 30 seconds</small>
             </div>
         </div>
 
         <div class="navigation">
-            <div class="nav-title">🔧 System Tools</div>
+            <div class="nav-title">System Tools</div>
             <div class="nav-links">
-                <a href="/health" class="nav-link">🏥 Health Check</a>
-                <a href="/config" class="nav-link">⚙️ Configuration</a>
-                <a href="/logs" class="nav-link">📋 System Logs</a>
-                <a href="/metrics" class="nav-link">📊 Prometheus</a>
-                <a href="/update" class="nav-link">🔄 Update</a>
-                <a href="/reboot" class="nav-link">🔄 Reboot</a>
+                <a href="/health" class="nav-link">Health Check</a>
+                <a href="/config" class="nav-link">Configuration</a>
+                <a href="/logs" class="nav-link">System Logs</a>
+                <a href="/metrics" class="nav-link">Prometheus</a>
+                <a href="/update" class="nav-link">Update</a>
+                <a href="/reboot" class="nav-link">Reboot</a>
             </div>
         </div>
     </div>
@@ -906,14 +906,14 @@ String generateHealthCheckHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏥 System Health Check</h1>
+            <h1>System Health Check</h1>
         </div>
 
         <div class="content">
             <div class="health-grid">
                 <div class="health-section device">
                     <div class="section-header">
-                        <div class="section-icon">📱</div>
+                        <div class="section-icon">DEV</div>
                         <div class="section-title">Device Information</div>
                     </div>
                     <div class="health-item">
@@ -936,7 +936,7 @@ String generateHealthCheckHTML() {
 
                 <div class="health-section sensor">
                     <div class="section-header">
-                        <div class="section-icon">🌡️</div>
+                        <div class="section-icon">TEMP</div>
                         <div class="section-title">Sensor Status</div>
                     </div>
                     <div class="health-item">
@@ -963,7 +963,7 @@ String generateHealthCheckHTML() {
 
                 <div class="health-section network">
                     <div class="section-header">
-                        <div class="section-icon">📡</div>
+                        <div class="section-icon">NET</div>
                         <div class="section-title">Network Status</div>
                     </div>
                     <div class="health-item">
@@ -990,7 +990,7 @@ String generateHealthCheckHTML() {
 
                 <div class="health-section system">
                     <div class="section-header">
-                        <div class="section-icon">⚡</div>
+                        <div class="section-icon">SYS</div>
                         <div class="section-title">System Resources</div>
                     </div>
                     <div class="health-item">
@@ -1018,14 +1018,14 @@ String generateHealthCheckHTML() {
         </div>
 
         <div class="navigation">
-            <div class="nav-title">🔧 Navigation</div>
+            <div class="nav-title">Navigation</div>
             <div class="nav-links">
-                <a href="/" class="nav-link">🏠 Dashboard</a>
-                <a href="/config" class="nav-link">⚙️ Configuration</a>
-                <a href="/logs" class="nav-link">📋 System Logs</a>
-                <a href="/metrics" class="nav-link">📊 Prometheus</a>
-                <a href="/update" class="nav-link">🔄 Update</a>
-                <a href="/reboot" class="nav-link">🔄 Reboot</a>
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/config" class="nav-link">Configuration</a>
+                <a href="/logs" class="nav-link">System Logs</a>
+                <a href="/metrics" class="nav-link">Prometheus</a>
+                <a href="/update" class="nav-link">Update</a>
+                <a href="/reboot" class="nav-link">Reboot</a>
             </div>
         </div>
     </div>
@@ -1116,7 +1116,7 @@ String generateConfigPageHTML() {
         }
 
         .config-title::before {
-            content: "📋";
+            content: "";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1166,7 +1166,7 @@ String generateConfigPageHTML() {
         }
 
         .form-title::before {
-            content: "⚙️";
+            content: "";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1315,7 +1315,7 @@ String generateConfigPageHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚙️ Device Configuration</h1>
+            <h1>&#x2699;&#xFE0F; Device Configuration</h1>
         </div>
 
         <div class="content">
@@ -1402,20 +1402,20 @@ String generateConfigPageHTML() {
                         </select>
                     </div>
 
-                    <button type="submit" class="submit-btn">💾 Save Configuration</button>
+                    <button type="submit" class="submit-btn">&#x1F4BE; Save Configuration</button>
                 </form>
             </div>
         </div>
 
         <div class="navigation">
-            <div class="nav-title">🔧 Navigation</div>
+            <div class="nav-title">&#x1F527; Navigation</div>
             <div class="nav-links">
-                <a href="/" class="nav-link">🏠 Dashboard</a>
-                <a href="/health" class="nav-link">🏥 Health Check</a>
-                <a href="/logs" class="nav-link">📋 System Logs</a>
-                <a href="/metrics" class="nav-link">📊 Prometheus</a>
-                <a href="/update" class="nav-link">🔄 Update</a>
-                <a href="/reboot" class="nav-link">🔄 Reboot</a>
+                <a href="/" class="nav-link">&#x1F3E0; Dashboard</a>
+                <a href="/health" class="nav-link">&#x1F3E5; Health Check</a>
+                <a href="/logs" class="nav-link">&#x1F4CB; System Logs</a>
+                <a href="/metrics" class="nav-link">&#x1F4CA; Prometheus</a>
+                <a href="/update" class="nav-link">&#x1F504; Update</a>
+                <a href="/reboot" class="nav-link">&#x1F504; Reboot</a>
             </div>
         </div>
     </div>
@@ -1583,7 +1583,7 @@ String generateUpdatePageHTML() {
         }
 
         .section-title::before {
-            content: "🔄";
+            content: "&#x1F504;";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1695,7 +1695,7 @@ String generateUpdatePageHTML() {
         }
 
         .warning-box h3::before {
-            content: "⚠️";
+            content: "&#x26A0;&#xFE0F;";
             margin-right: 10px;
         }
 
@@ -1770,7 +1770,7 @@ String generateUpdatePageHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 Firmware Update</h1>
+            <h1>&#x1F504; Firmware Update</h1>
         </div>
 
         <div class="content">
@@ -1823,14 +1823,14 @@ String generateUpdatePageHTML() {
         </div>
 
         <div class="navigation">
-            <div class="nav-title">🔧 Navigation</div>
+            <div class="nav-title">&#x1F527; Navigation</div>
             <div class="nav-links">
-                <a href="/" class="nav-link">🏠 Dashboard</a>
-                <a href="/health" class="nav-link">🏥 Health Check</a>
-                <a href="/config" class="nav-link">⚙️ Configuration</a>
-                <a href="/logs" class="nav-link">📋 System Logs</a>
-                <a href="/metrics" class="nav-link">📊 Prometheus</a>
-                <a href="/reboot" class="nav-link">🔄 Reboot</a>
+                <a href="/" class="nav-link">&#x1F3E0; Dashboard</a>
+                <a href="/health" class="nav-link">&#x1F3E5; Health Check</a>
+                <a href="/config" class="nav-link">&#x2699;&#xFE0F; Configuration</a>
+                <a href="/logs" class="nav-link">&#x1F4CB; System Logs</a>
+                <a href="/metrics" class="nav-link">&#x1F4CA; Prometheus</a>
+                <a href="/reboot" class="nav-link">&#x1F504; Reboot</a>
             </div>
         </div>
     </div>
