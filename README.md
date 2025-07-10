@@ -56,7 +56,7 @@ The following libraries are automatically installed by the GitHub Actions workfl
 ### 2. Software Configuration
 
 1. Clone this repository
-2. Open `src/esp32_dht22_prometheus.ino` in Arduino IDE
+2. Open `esp32_dht22_prometheus/esp32_dht22_prometheus.ino` in Arduino IDE
 3. Update WiFi credentials:
    ```cpp
    const char* ssid = "YOUR_WIFI_SSID";
@@ -267,7 +267,7 @@ esp32_uptime_seconds{location="office",device="sensor-01"} 86400
 1. Install Arduino IDE
 2. Install ESP32 board package
 3. Install required libraries
-4. Open `src/esp32_dht22_prometheus.ino`
+4. Open `esp32_dht22_prometheus/esp32_dht22_prometheus.ino`
 5. Configure settings and upload
 
 ### GitHub Actions Workflow
