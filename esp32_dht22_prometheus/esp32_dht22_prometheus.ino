@@ -126,11 +126,11 @@ void loop() {
 
 void connectWiFi() {
   logMessage("INFO", "NETWORK", "Connecting to WiFi...");
-  
+
   // Set WiFi power management for better stability
   WiFi.setSleep(false);
   WiFi.setTxPower(WIFI_POWER_19_5dBm);
-  
+
   WiFi.begin(config.wifiSsid.c_str(), config.wifiPassword.c_str());
 
   int attempts = 0;
@@ -204,6 +204,16 @@ void setupWebServer() {
   // Manual update endpoint
   server.on("/update", HTTP_GET, []() {
     handleUpdateRequest();
+  });
+
+  // Config download endpoint
+  server.on("/config/download", HTTP_GET, []() {
+    handleConfigDownload();
+  });
+
+  // Config import endpoint
+  server.on("/config/import", HTTP_POST, []() {
+    handleConfigImport();
   });
 
   // Reboot endpoint
@@ -314,6 +324,10 @@ String generateRootPageHTML() {
             font-size: 2.5em;
             margin-bottom: 10px;
             font-weight: 300;
+        }
+        .header h1::before {
+            content: "🔄";
+            margin-right: 15px;
         }
 
         .device-info {
@@ -546,7 +560,7 @@ String generateRootPageHTML() {
             <div class="device-info">
                 <span><strong>Device:</strong> )" + config.deviceName + R"(</span>
                 <span><strong>Location:</strong> )" + config.location + R"(</span>
-                <span><strong>Version:</strong> )" + version + R"(</span>
+                <span><strong>Version:</strong> )" + currentVersion + R"(</span>
             </div>
         </div>
 
@@ -612,12 +626,12 @@ String generateRootPageHTML() {
         <div class="navigation">
             <div class="nav-title">System Tools</div>
             <div class="nav-links">
-                <a href="/health" class="nav-link">Health Check</a>
+                <a href="/health" class="nav-link">🏥 Health Check</a>
                 <a href="/config" class="nav-link">Config</a>
-                <a href="/logs" class="nav-link">System Logs</a>
-                <a href="/metrics" class="nav-link">Prometheus</a>
-                <a href="/update" class="nav-link">Update</a>
-                <a href="/reboot" class="nav-link">Reboot</a>
+                <a href="/logs" class="nav-link">📋 System Logs</a>
+                <a href="/metrics" class="nav-link">📊 Prometheus</a>
+                <a href="/update" class="nav-link">🔄 Update</a>
+                <a href="/reboot" class="nav-link">🔄 Reboot</a>
             </div>
         </div>
     </div>
@@ -1013,6 +1027,10 @@ String generateHealthCheckHTML() {
                         <span class="health-value">)" + String(ESP.getHeapSize() / 1024) + R"( KB</span>
                     </div>
                     <div class="health-item">
+                        <span class="health-label">SPIFFS Free</span>
+                        <span class="health-value">)" + String(SPIFFS.usedBytes() / 1024) + R"( KB</span>
+                    </div>
+                    <div class="health-item">
                         <span class="health-label">CPU Frequency</span>
                         <span class="health-value">)" + String(ESP.getCpuFreqMHz()) + R"( MHz</span>
                     </div>
@@ -1027,12 +1045,12 @@ String generateHealthCheckHTML() {
         <div class="navigation">
             <div class="nav-title">Navigation</div>
             <div class="nav-links">
-                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/" class="nav-link">🏠 Dashboard</a>
                 <a href="/config" class="nav-link">Config</a>
-                <a href="/logs" class="nav-link">System Logs</a>
-                <a href="/metrics" class="nav-link">Prometheus</a>
-                <a href="/update" class="nav-link">Update</a>
-                <a href="/reboot" class="nav-link">Reboot</a>
+                <a href="/logs" class="nav-link">📋 System Logs</a>
+                <a href="/metrics" class="nav-link">📊 Prometheus</a>
+                <a href="/update" class="nav-link">🔄 Update</a>
+                <a href="/reboot" class="nav-link">🔄 Reboot</a>
             </div>
         </div>
     </div>
@@ -1123,7 +1141,7 @@ String generateConfigPageHTML() {
         }
 
         .config-title::before {
-            content: "";
+            content: "📝";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1173,7 +1191,7 @@ String generateConfigPageHTML() {
         }
 
         .form-title::before {
-            content: "";
+            content: "🛠️";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1423,6 +1441,17 @@ String generateConfigPageHTML() {
                     <button type="submit" class="submit-btn">&#x1F4BE; Save Configuration</button>
                 </form>
             </div>
+
+            <div class="form-section">
+                <div class="form-title">Export/Import Configuration</div>
+                <form method="GET" action="/config/download">
+                    <button type="submit" class="submit-btn">&#x2B07;&#xFE0F; Download Config</button>
+                </form>
+                <form method="POST" action="/config/import" enctype="multipart/form-data" style="margin-top: 15px;">
+                    <input type="file" name="configFile" accept="application/json" required>
+                    <button type="submit" class="submit-btn">&#x1F4E5; Import Config</button>
+                </form>
+            </div>
         </div>
 
         <div class="navigation">
@@ -1495,7 +1524,7 @@ void handleLogsPage() {
 }
 
 String generateLogsText() {
-  String response = "ESP32 System Logs\n";
+  String response = "📋 ESP32 System Logs\n";
   response += "================\n\n";
   response += "Stats: " + String(logCount) + " entries | ";
   response += "Memory: " + String(ESP.getFreeHeap() / 1024) + "KB\n\n";
@@ -1612,7 +1641,7 @@ String generateUpdatePageHTML() {
         }
 
         .section-title::before {
-            content: "&#x1F504;";
+            content: "🔄";
             margin-right: 10px;
             font-size: 1.2em;
         }
@@ -1724,7 +1753,7 @@ String generateUpdatePageHTML() {
         }
 
         .warning-box h3::before {
-            content: "&#x26A0;&#xFE0F;";
+            content: "⚠️";
             margin-right: 10px;
         }
 
@@ -1799,7 +1828,7 @@ String generateUpdatePageHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>&#x1F504; Firmware Update</h1>
+            <h1>🔄 Firmware Update</h1>
         </div>
 
         <div class="content">
@@ -1857,6 +1886,7 @@ String generateUpdatePageHTML() {
                 <a href="/config" class="nav-link">Config</a>
                 <a href="/logs" class="nav-link">📋 System Logs</a>
                 <a href="/metrics" class="nav-link">📊 Prometheus</a>
+                <a href="/update" class="nav-link">🔄 Update</a>
                 <a href="/reboot" class="nav-link">🔄 Reboot</a>
             </div>
         </div>
@@ -1869,8 +1899,8 @@ String generateUpdatePageHTML() {
 }
 
 void handleRebootRequest() {
-  String html = "<!DOCTYPE html><html><head><title>Rebooting</title></head><body>";
-  html += "<h1>DEVICE REBOOT INITIATED</h1>";
+  String html = "<!DOCTYPE html><html><head><title>🔄 Rebooting</title></head><body>";
+  html += "<h1>🔄 DEVICE REBOOT INITIATED</h1>";
   html += "<p>Device will restart in 3 seconds...</p>";
   html += "<p>Refresh this page after 15 seconds to reconnect.</p>";
   html += "</body></html>";
@@ -1921,7 +1951,7 @@ void loadConfig() {
   } else {
     logMessage("INFO", "CONFIG", "Using default configuration");
   }
-  
+
   // Fallback to default WiFi if not configured
   if (config.wifiSsid.length() == 0) {
     config.wifiSsid = defaultSsid;
@@ -2020,7 +2050,7 @@ bool downloadAndInstallUpdate(String version) {
 
   HTTPClient http;
   http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-  http.setTimeout(30000); // 30 second timeout
+  http.setTimeout(300000); // 5 minute timeout for large firmware files
   http.begin(firmwareUrl);
   http.addHeader("User-Agent", "ESP32-OTA-Updater");
   http.addHeader("Accept", "*/*");
@@ -2033,7 +2063,18 @@ bool downloadAndInstallUpdate(String version) {
 
     if (contentLength > 0) {
       logMessage("INFO", "OTA", "Firmware size: " + String(contentLength) + " bytes");
-      
+
+      // Check available space
+      size_t freeSpace = ESP.getFreeSketchSpace();
+      logMessage("INFO", "OTA", "Available space: " + String(freeSpace) + " bytes");
+
+      if (contentLength > freeSpace) {
+        logMessage("ERROR", "OTA", "Not enough space: need " + String(contentLength) + " bytes, have " + String(freeSpace) + " bytes");
+        http.end();
+        updateInProgress = false;
+        return false;
+      }
+
       bool canBegin = Update.begin(contentLength);
 
       if (canBegin) {
@@ -2043,29 +2084,29 @@ bool downloadAndInstallUpdate(String version) {
         size_t written = 0;
         size_t lastProgress = 0;
         unsigned long startTime = millis();
-        
+
         // Download in chunks with progress reporting
         while (written < contentLength) {
-          if (millis() - startTime > 60000) { // 60 second timeout
-            logMessage("ERROR", "OTA", "Download timeout after 60 seconds");
+          if (millis() - startTime > 300000) { // 5 minute timeout
+            logMessage("ERROR", "OTA", "Download timeout after 5 minutes");
             break;
           }
-          
+
           if (WiFi.status() != WL_CONNECTED) {
             logMessage("ERROR", "OTA", "WiFi disconnected during download");
             break;
           }
-          
+
           size_t available = client->available();
           if (available > 0) {
             uint8_t buffer[1024];
             size_t toRead = min(available, sizeof(buffer));
             size_t bytesRead = client->read(buffer, toRead);
-            
+
             if (bytesRead > 0) {
               size_t bytesWritten = Update.write(buffer, bytesRead);
               written += bytesWritten;
-              
+
               // Report progress every 10%
               if (written - lastProgress > contentLength / 10) {
                 int progress = (written * 100) / contentLength;
@@ -2157,4 +2198,41 @@ bool verifyFirmwareChecksum(String version) {
 
   http.end();
   return false;
+}
+
+// Add config download/import endpoints
+void handleConfigDownload() {
+  if (SPIFFS.exists("/config.json")) {
+    File configFile = SPIFFS.open("/config.json", "r");
+    if (configFile) {
+      server.sendHeader("Content-Disposition", "attachment; filename=config.json");
+      server.sendHeader("Content-Type", "application/json");
+      server.streamFile(configFile, "application/json");
+      configFile.close();
+      return;
+    }
+  }
+  server.send(404, "text/plain", "Config file not found");
+}
+
+void handleConfigImport() {
+  HTTPUpload& upload = server.upload();
+  if (upload.status == UPLOAD_FILE_START) {
+    File configFile = SPIFFS.open("/config.json", "w");
+    if (!configFile) {
+      server.send(500, "text/plain", "Failed to open config file for writing");
+      return;
+    }
+    configFile.close();
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
+    File configFile = SPIFFS.open("/config.json", "a");
+    if (configFile) {
+      configFile.write(upload.buf, upload.currentSize);
+      configFile.close();
+    }
+  } else if (upload.status == UPLOAD_FILE_END) {
+    loadConfig();
+    server.sendHeader("Location", "/config");
+    server.send(303);
+  }
 }
