@@ -21,14 +21,16 @@ DHT dht(DHT_PIN, DHT_TYPE);
 WebServer server(80);
 
 // WiFi Credentials (you'll need to set these)
-const char* ssid = "ssid";
-const char* password = "password";
+const char* defaultSsid = "ssid";
+const char* defaultPassword = "password";
 
 // Device Configuration
 struct DeviceConfig {
   String location = "default-location";
   String deviceName = "default-device";
   String description = "";
+  String wifiSsid = "";
+  String wifiPassword = "";
   bool otaEnabled = true;
   bool autoUpdate = true;
   float updateInterval = 1.0;
@@ -124,7 +126,12 @@ void loop() {
 
 void connectWiFi() {
   logMessage("INFO", "NETWORK", "Connecting to WiFi...");
-  WiFi.begin(ssid, password);
+  
+  // Set WiFi power management for better stability
+  WiFi.setSleep(false);
+  WiFi.setTxPower(WIFI_POWER_19_5dBm);
+  
+  WiFi.begin(config.wifiSsid.c_str(), config.wifiPassword.c_str());
 
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 20) {
@@ -590,7 +597,7 @@ String generateRootPageHTML() {
                     <div class="metric-value">)" + WiFi.localIP().toString() + R"(</div>
                     <div class="metric-details">
                         Status: <span class="status-badge )" + networkStatusClass + R"(">)" + networkStatus + R"(</span><br>
-                        SSID: )" + String(ssid) + R"(<br>
+                        SSID: )" + String(config.wifiSsid) + R"(<br>
                         Signal: )" + String(WiFi.RSSI()) + R"( dBm
                     </div>
                 </div>
@@ -976,7 +983,7 @@ String generateHealthCheckHTML() {
                     </div>
                     <div class="health-item">
                         <span class="health-label">SSID</span>
-                        <span class="health-value">)" + String(ssid) + R"(</span>
+                        <span class="health-value">)" + String(config.wifiSsid) + R"(</span>
                     </div>
                     <div class="health-item">
                         <span class="health-label">Signal Strength</span>
@@ -1368,6 +1375,17 @@ String generateConfigPageHTML() {
                         <input type="text" id="description" name="description" class="form-input" value=")" + config.description + R"(" placeholder="Optional device description">
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="wifi_ssid">WiFi SSID</label>
+                            <input type="text" id="wifi_ssid" name="wifi_ssid" class="form-input" value=")" + config.wifiSsid + R"(" placeholder="Your WiFi network name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="wifi_password">WiFi Password</label>
+                            <input type="password" id="wifi_password" name="wifi_password" class="form-input" value=")" + config.wifiPassword + R"(" placeholder="Your WiFi password">
+                        </div>
+                    </div>
+
                     <div class="checkbox-group">
                         <input type="checkbox" id="ota_enabled" name="ota_enabled" class="checkbox-input" )" + otaCheckedStr + R"(>
                         <label class="checkbox-label" for="ota_enabled">Enable OTA Updates</label>
@@ -1437,6 +1455,12 @@ void handleConfigUpdate() {
   }
   if (server.hasArg("description")) {
     config.description = server.arg("description");
+  }
+  if (server.hasArg("wifi_ssid")) {
+    config.wifiSsid = server.arg("wifi_ssid");
+  }
+  if (server.hasArg("wifi_password")) {
+    config.wifiPassword = server.arg("wifi_password");
   }
 
   config.otaEnabled = server.hasArg("ota_enabled");
@@ -1882,11 +1906,13 @@ void loadConfig() {
       config.location = doc["location"] | "default-location";
       config.deviceName = doc["deviceName"] | "default-device";
       config.description = doc["description"] | "";
+      config.wifiSsid = doc["wifiSsid"] | "";
+      config.wifiPassword = doc["wifiPassword"] | "";
       config.otaEnabled = doc["otaEnabled"] | true;
       config.autoUpdate = doc["autoUpdate"] | true;
       config.updateInterval = doc["updateInterval"] | 1.0;
       config.repoOwner = doc["repoOwner"] | "TerrifiedBug";
-      config.repoName = doc["repoName"] | "pico-w-prometheus-dht22";
+      config.repoName = doc["repoName"] | "esp32-prometheus-dht22";
       config.branch = doc["branch"] | "main";
 
       configFile.close();
@@ -1894,6 +1920,13 @@ void loadConfig() {
     }
   } else {
     logMessage("INFO", "CONFIG", "Using default configuration");
+  }
+  
+  // Fallback to default WiFi if not configured
+  if (config.wifiSsid.length() == 0) {
+    config.wifiSsid = defaultSsid;
+    config.wifiPassword = defaultPassword;
+    logMessage("INFO", "CONFIG", "Using default WiFi credentials");
   }
 }
 
@@ -1903,6 +1936,8 @@ void saveConfig() {
   doc["location"] = config.location;
   doc["deviceName"] = config.deviceName;
   doc["description"] = config.description;
+  doc["wifiSsid"] = config.wifiSsid;
+  doc["wifiPassword"] = config.wifiPassword;
   doc["otaEnabled"] = config.otaEnabled;
   doc["autoUpdate"] = config.autoUpdate;
   doc["updateInterval"] = config.updateInterval;
@@ -1985,6 +2020,7 @@ bool downloadAndInstallUpdate(String version) {
 
   HTTPClient http;
   http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  http.setTimeout(30000); // 30 second timeout
   http.begin(firmwareUrl);
   http.addHeader("User-Agent", "ESP32-OTA-Updater");
   http.addHeader("Accept", "*/*");
@@ -1996,13 +2032,51 @@ bool downloadAndInstallUpdate(String version) {
     int contentLength = http.getSize();
 
     if (contentLength > 0) {
+      logMessage("INFO", "OTA", "Firmware size: " + String(contentLength) + " bytes");
+      
       bool canBegin = Update.begin(contentLength);
 
       if (canBegin) {
         logMessage("INFO", "OTA", "Starting firmware update, size: " + String(contentLength) + " bytes");
 
         WiFiClient* client = http.getStreamPtr();
-        size_t written = Update.writeStream(*client);
+        size_t written = 0;
+        size_t lastProgress = 0;
+        unsigned long startTime = millis();
+        
+        // Download in chunks with progress reporting
+        while (written < contentLength) {
+          if (millis() - startTime > 60000) { // 60 second timeout
+            logMessage("ERROR", "OTA", "Download timeout after 60 seconds");
+            break;
+          }
+          
+          if (WiFi.status() != WL_CONNECTED) {
+            logMessage("ERROR", "OTA", "WiFi disconnected during download");
+            break;
+          }
+          
+          size_t available = client->available();
+          if (available > 0) {
+            uint8_t buffer[1024];
+            size_t toRead = min(available, sizeof(buffer));
+            size_t bytesRead = client->read(buffer, toRead);
+            
+            if (bytesRead > 0) {
+              size_t bytesWritten = Update.write(buffer, bytesRead);
+              written += bytesWritten;
+              
+              // Report progress every 10%
+              if (written - lastProgress > contentLength / 10) {
+                int progress = (written * 100) / contentLength;
+                logMessage("INFO", "OTA", "Download progress: " + String(progress) + "%");
+                lastProgress = written;
+              }
+            }
+          } else {
+            delay(10); // Small delay to prevent watchdog issues
+          }
+        }
 
         if (written == contentLength) {
           logMessage("INFO", "OTA", "Firmware download completed");
