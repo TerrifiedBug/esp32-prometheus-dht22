@@ -31,16 +31,25 @@ jobs:
           arduino-cli lib install "DHT sensor library"
           arduino-cli lib install "ArduinoJson"
 
+      - name: Debug file structure
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+          echo "esp32_dht22_prometheus directory contents:"
+          ls -la esp32_dht22_prometheus/
+
       - name: Create build directory
         run: mkdir -p build
 
       - name: Build firmware
         run: |
+          cd esp32_dht22_prometheus
           arduino-cli compile \
             --fqbn esp32:esp32:esp32 \
-            --output-dir build \
+            --output-dir ../build \
             --export-binaries \
-            esp32_dht22_prometheus/esp32_dht22_prometheus.ino
+            esp32_dht22_prometheus.ino
 
       - name: Rename binary with version
         run: |
