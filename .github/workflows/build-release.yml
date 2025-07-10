@@ -64,6 +64,13 @@ jobs:
           cd build
           sha256sum *.bin > checksums.txt
 
+      - name: Debug build output
+        run: |
+          echo "Build directory contents:"
+          ls -la build/
+          echo "Looking for binary files:"
+          find build/ -name "*.bin" -type f
+
       - name: Upload firmware to release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
@@ -71,7 +78,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/esp32_dht22_prometheus_*.bin
+          asset_path: ./build/esp32_dht22_prometheus_${{ github.ref_name }}.bin
           asset_name: esp32_dht22_prometheus_${{ github.ref_name }}.bin
           asset_content_type: application/octet-stream
 
