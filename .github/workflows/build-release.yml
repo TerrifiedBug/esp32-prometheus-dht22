@@ -1,0 +1,75 @@
+name: Build ESP32 Firmware
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag"
+        required: true
+        default: "v1.0.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Install ESP32 platform
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Install required libraries
+        run: |
+          arduino-cli lib install "DHT sensor library"
+          arduino-cli lib install "ArduinoJson"
+
+      - name: Create build directory
+        run: mkdir -p build
+
+      - name: Build firmware
+        run: |
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32 \
+            --output-dir build \
+            --export-binaries \
+            src/esp32_dht22_prometheus.ino
+
+      - name: Rename binary with version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          cp build/esp32_dht22_prometheus.ino.bin build/esp32_dht22_prometheus_${VERSION}.bin
+
+      - name: Generate checksums
+        run: |
+          cd build
+          sha256sum *.bin > checksums.txt
+
+      - name: Upload firmware to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/esp32_dht22_prometheus_*.bin
+            build/checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v3
+        with:
+          name: esp32-firmware
+          path: |
+            build/esp32_dht22_prometheus_*.bin
+            build/checksums.txt
