@@ -606,7 +606,7 @@ String generateRootPageHTML() {
             <div class="nav-title">System Tools</div>
             <div class="nav-links">
                 <a href="/health" class="nav-link">Health Check</a>
-                <a href="/config" class="nav-link">Configuration</a>
+                <a href="/config" class="nav-link">Config</a>
                 <a href="/logs" class="nav-link">System Logs</a>
                 <a href="/metrics" class="nav-link">Prometheus</a>
                 <a href="/update" class="nav-link">Update</a>
@@ -1021,7 +1021,7 @@ String generateHealthCheckHTML() {
             <div class="nav-title">Navigation</div>
             <div class="nav-links">
                 <a href="/" class="nav-link">Dashboard</a>
-                <a href="/config" class="nav-link">Configuration</a>
+                <a href="/config" class="nav-link">Config</a>
                 <a href="/logs" class="nav-link">System Logs</a>
                 <a href="/metrics" class="nav-link">Prometheus</a>
                 <a href="/update" class="nav-link">Update</a>
@@ -1412,6 +1412,7 @@ String generateConfigPageHTML() {
             <div class="nav-links">
                 <a href="/" class="nav-link">&#x1F3E0; Dashboard</a>
                 <a href="/health" class="nav-link">&#x1F3E5; Health Check</a>
+                <a href="/config" class="nav-link">Config</a>
                 <a href="/logs" class="nav-link">&#x1F4CB; System Logs</a>
                 <a href="/metrics" class="nav-link">&#x1F4CA; Prometheus</a>
                 <a href="/update" class="nav-link">&#x1F504; Update</a>
@@ -1515,6 +1516,10 @@ String generateUpdatePageHTML() {
 
   unsigned long timeSinceLastCheck = (millis() - lastUpdateCheck) / 1000;
   String lastCheckStr = lastUpdateCheck == 0 ? "Never" : String(timeSinceLastCheck) + "s ago";
+
+  String buttonHtml = "<button class=\"action-btn primary\" onclick=\"checkForUpdates()\"";
+  if (updateInProgress) buttonHtml += " disabled";
+  buttonHtml += ">Check for Updates</button>";
 
   String html = R"(
 <!DOCTYPE html>
@@ -1809,9 +1814,7 @@ String generateUpdatePageHTML() {
                 </div>
 
                 <div class="update-actions">
-                    <button class="action-btn primary" onclick="checkForUpdates()" )" + (updateInProgress ? "disabled" : "") + R"(>
-                        Check for Updates
-                    </button>
+            )" + buttonHtml + R"(
                     <a href="/config" class="action-btn">
                         Update Settings
                     </a>
@@ -1823,14 +1826,14 @@ String generateUpdatePageHTML() {
         </div>
 
         <div class="navigation">
-            <div class="nav-title">&#x1F527; Navigation</div>
+            <div class="nav-title">🔧 Navigation</div>
             <div class="nav-links">
-                <a href="/" class="nav-link">&#x1F3E0; Dashboard</a>
-                <a href="/health" class="nav-link">&#x1F3E5; Health Check</a>
-                <a href="/config" class="nav-link">&#x2699;&#xFE0F; Configuration</a>
-                <a href="/logs" class="nav-link">&#x1F4CB; System Logs</a>
-                <a href="/metrics" class="nav-link">&#x1F4CA; Prometheus</a>
-                <a href="/reboot" class="nav-link">&#x1F504; Reboot</a>
+                <a href="/" class="nav-link">🏠 Dashboard</a>
+                <a href="/health" class="nav-link">🏥 Health Check</a>
+                <a href="/config" class="nav-link">Config</a>
+                <a href="/logs" class="nav-link">📋 System Logs</a>
+                <a href="/metrics" class="nav-link">📊 Prometheus</a>
+                <a href="/reboot" class="nav-link">🔄 Reboot</a>
             </div>
         </div>
     </div>
