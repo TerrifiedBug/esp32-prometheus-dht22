@@ -2,6 +2,8 @@
 
 A comprehensive ESP32-based temperature and humidity monitoring system with automated over-the-air (OTA) firmware updates via GitHub Actions and releases.
 
+> **✅ OTA Update Issue Resolved**: Firmware size optimized from 1.23MB to ~1.11MB (61KB reduction) through HTML minification and code optimization. OTA updates now work reliably with significant headroom for future features. See [OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) for details.
+
 ## Features
 
 ### Core Functionality
